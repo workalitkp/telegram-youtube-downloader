@@ -68,7 +68,15 @@ def get_sub(message):
     bot.send_message(message.chat.id,"done!")
 @bot.message_handler(state = MyStates.attach)
 def merge(message):
-    ...
+    bot.set_state(message.from_user.id, MyStates.defualt, message.chat.id)
+    # if(" " in message):
+    #     bot.send_message(message.chat.id,"dont use space in your name!\try again")
+    bot.send_message(message.chat.id,"starting")
+    os.system(f"ffmpeg -i yt_file.mp4 -vf subtitles=yt_file.fa.srt {message.text}.mp4")
+    bot.send_message(message.chat.id,"done!\nuploading")
+    with open(f"{message.text}.mp4","rb") as video:
+        bot.send_video(message.chat.id,video,timeout=None)
+
 @bot.message_handler(func=lambda message: True)
 def all_messages(message):
     if(message.text =='download from youtube.'):
@@ -79,7 +87,7 @@ def all_messages(message):
         bot.send_message(message.chat.id,"send me your new subtitle file.")
     elif(message.text == 'attach video and subtitle.'):
         bot.set_state(message.from_user.id, MyStates.attach, message.chat.id)
-        bot.send_message(message.chat.id,"you sure?") # add update for keyboard and forwarding files for user to check
+        bot.send_message(message.chat.id,"enter the name of your video") # add update for keyboard and forwarding files for user to check
     else:
         bot.reply_to(message, "please choose an option",reply_markup=keyboard())
 
