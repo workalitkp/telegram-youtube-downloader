@@ -16,8 +16,7 @@ class MyStates(StatesGroup):
 state_storage = StateMemoryStorage() # you can init here another storage
 with open('token.txt','r') as file:
     token = file.read()
-bot = telebot.TeleBot(token,
-state_storage=state_storage)
+bot = telebot.TeleBot(token,state_storage=state_storage)
 
 
 
@@ -42,14 +41,16 @@ def any_state(message):
     """
     bot.send_message(message.chat.id, "Your state was cancelled.")
     bot.delete_state(message.from_user.id, message.chat.id)
-
+#TODO : add support for not-auto-generated subs.
 @bot.message_handler(state = MyStates.download)
 def yt_dl(message):
+    os.system('rm yt_file*')
     chat_id = message.chat.id
     bot.set_state(message.from_user.id, MyStates.defualt, message.chat.id)
     try:
         bot.send_message(chat_id, "downloading...")
-        os.system(f"yt-dlp --format mp4 -o 'yt_file.mp4' --sub-lang fa --write-auto-sub --convert-subs=srt {message.text}")
+        os.system(f"yt-dlp --format mp4 -o 'yt_file.mp4' --sub-lang fa --write-auto-sub {message.text}")
+        os.system("ffmpeg -i yt_file.fa.vtt yt_file.fa.srt")
         bot.reply_to(message, "done!\nuploading")
         with open("yt_file.mp4","rb") as video:
             bot.send_video(chat_id,video)
@@ -76,7 +77,6 @@ def merge(message):
     bot.send_message(message.chat.id,"done!\nuploading")
     with open(f"{message.text}.mp4","rb") as video:
         bot.send_video(message.chat.id,video,timeout=None)
-
 @bot.message_handler(func=lambda message: True)
 def all_messages(message):
     if(message.text =='download from youtube.'):
